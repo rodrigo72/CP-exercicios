@@ -293,8 +293,22 @@ unlines' :: [String] -> String
 unlines' [] = "" -- tail ["example"] = []
 unlines' (x:xs) = x ++ "\n" ++ unlines' xs
 
--- pMaior :: Ord a => [a] -> Int
--- pMaior (x:xs)
+
+-- 09/10/2023
+
+-- [1,2,3] !! 1 (index) = 2
+
+pMaior' :: Ord a => [a] -> Int
+pMaior' l@(x:xs)
+    | x == pMaiorAux l = 0
+    | otherwise = 1 + pMaior' xs
+
+-- encontra o maior número
+pMaiorAux :: Ord a => [a] -> a
+pMaiorAux [x] = x 
+pMaiorAux (x:y:zs)
+    | x >= y = pMaiorAux(x:zs)
+    | otherwise = pMaiorAux(y:zs)
 
 lookup' :: Eq a => a -> [(a,b)] -> Maybe b
 lookup' _ [] = Nothing
@@ -302,3 +316,131 @@ lookup' n ((a,b):xs)
     | n == a = Just b
     | otherwise = lookup' n xs
 
+pMaior'' :: Ord a => [a] -> Int
+pMaior'' [_] = 0
+pMaior'' (x:xs)
+    | x > (xs !! r) = 0
+    | otherwise = 1 + r
+    where r = pMaior'' xs
+
+preCrescente :: Ord a => [a] -> [a]
+preCrescente [] = [] -- apenas para o caso da lista vazia
+preCrescente [x] = [x]
+preCrescente (x:y:zs) 
+    | x < y = x : preCrescente (y:zs)
+    | otherwise = [x]
+
+iSort' :: Ord a => [a] -> [a]
+isort' [] = []
+iSort' [x] = [x]
+iSort' (x:xs) = insert' x (iSort' xs)
+
+-- menor em tamanho apenas
+menor :: String -> String -> Bool
+menor "" "" = False
+menor "" _ = True
+menor _ "" = False
+menor str1 str2 = menor (tail str1) (tail str2)
+
+menor' :: String -> String -> Bool
+menor' _ "" = False
+menor' "" _ = True
+menor' (x:xs) (y:ys)
+    | x < y = True
+    | x == y = menor' xs ys
+    | otherwise = False
+
+elemMSet :: Eq a => a -> [(a, Int)] -> Bool
+elemMSet n [] = False
+elemMSet n ((a,b):t)
+    | n == a = True
+    | otherwise = elemMSet n t
+
+converteMSet :: [(a, Int)] -> [a]
+converteMSet [] = []
+converteMSet ((a,b):t)
+    | b > 0 = a : converteMSet ((a,b-1):t)
+    | otherwise = converteMSet t
+
+insereMSet :: Eq a => a -> [(a, Int)] -> [(a, Int)]
+insereMSet n [] = [(n,1)]
+insereMSet n ((a,b):t)
+    | n == a = ((a, b+1):t)
+    | otherwise = (a,b) : insereMSet n t
+
+removeMSet :: Eq a => a -> [(a, Int)] -> [(a, Int)]
+removeMSet _ [] = []
+removeMSet n ((a,b):t)
+    | n == a && b - 1 == 0 = t
+    | n == a && b - 1 > 0 = ((a,b-1):t)
+    | otherwise = (a,b) : removeMSet n t
+
+constroiMSet :: Ord a => [a] -> [(a, Int)]
+constroiMSet [] = []
+constroiMSet (x:xs) = insereMSet x (constroiMSet xs)
+
+-- aux de partitionEithers
+insereLeft :: a -> ([a], [b]) -> ([a], [b])
+insereLeft x (left, right) = (x : left, right)
+
+-- aux de partitionEithers
+insereRight :: b -> ([a], [b]) -> ([a], [b])
+insereRight x (left, right) = (left, x : right)
+
+partitionEithers :: [Either a b] -> ([a], [b])
+partitionEithers [] = ([],[])
+partitionEithers (x:xs) = case x of 
+                            Left n -> insereLeft n (partitionEithers xs)
+                            Right n -> insereRight n (partitionEithers xs)
+
+catMaybes :: [Maybe a] -> [a]
+catMaybes [] = []
+catMaybes (x:xs) = case x of
+                        Just n -> n : catMaybes xs 
+                        Nothing -> catMaybes xs
+-- catMaybes [Just 1, Just 2, Nothing, Just 3, Nothing] = [1,2,3]
+
+data Movimento = Norte | Sul | Este | Oeste 
+    deriving Show
+
+caminho :: (Int, Int) -> (Int, Int) -> [Movimento]
+caminho (x1, y1) (x2, y2)
+    | x1 /= x2 = if x1 > x2 then Oeste : caminho (x1-1, y1) (x2, y2) else Este : caminho (x1+1, y1) (x2, y2)
+    | y1 /= y2 = if y1 > y2 then Sul : caminho (x1, y1-1) (x2, y2) else Norte : caminho (x1, y1+1) (x2, y2) 
+    | otherwise = []
+
+hasLoopsAux :: (Int, Int) -> (Int, Int) -> [Movimento] -> Bool
+hasLoopsAux _ _ [] = False
+hasLoopsAux i (x2, y2) (Norte : t) = i == (x2, y2+1) || hasLoopsAux i (x2, y2 + 1) t
+hasLoopsAux i (x2, y2) (Sul : t)   = i == (x2, y2-1) || hasLoopsAux i (x2, y2 - 1) t
+hasLoopsAux i (x2, y2) (Este : t)  = i == (x2+1, y2) || hasLoopsAux i (x2 + 1, y2) t
+hasLoopsAux i (x2, y2) (Oeste : t) = i == (x2-1, y2) || hasLoopsAux i (x2 - 1, y2) t
+
+hasLoops :: (Int, Int) -> [Movimento] -> Bool
+hasLoops (x, y) m = hasLoopsAux (x, y) (x, y) m
+
+type Ponto = (Float,Float)
+data Rectangulo = Rect Ponto Ponto
+
+contaQuadrados :: [Rectangulo] -> Int
+contaQuadrados [] = 0
+contaQuadrados (x:xs) 
+    | eQuadrado x = 1 + contaQuadrados xs
+    | otherwise = contaQuadrados xs
+
+eQuadrado :: Rectangulo -> Bool
+eQuadrado (Rect (x1,y1) (x2,y2)) = abs (y2 - y1) == abs (x2 - x1)
+
+
+areaTotal :: [Rectangulo] -> Float
+areaTotal [] = 0
+areaTotal ((Rect (x1,y1) (x2,y2)):t) = abs (x2 - x1) * abs (y2 - y1) + areaTotal t
+
+data Equipamento = Bom | Razoavel | Avariado
+    deriving Show
+
+naoReparar ::  [Equipamento] -> Int
+naoReparar [] = 0
+naoReparar (x:xs) = case x of
+    Avariado -> naoReparar xs
+    _ -> 1 + naoReparar xs
