@@ -18,7 +18,10 @@ ap_3 :: (a -> b, a) -> b
 ap_3 = uncurry id
 
 ap_4 :: (a -> b, a) -> b
-ap_4 (f, a) = f a
+ap_4 (f, a) = ($) f a
+
+ap_5 :: (a -> b, a) -> b
+ap_5 (f, a) = f a
 
 testFunction = ap_4 . (curry f >< id)
 
