@@ -98,3 +98,18 @@ test3 f = f . reverse
 -- receba um unico argumento e retorna outra função que aceita os 
 -- restantes argumentos, um por um
 -- f :: a -> b -> c     <=> f :: a -> (b -> c)
+
+concat' :: [[a]] -> [a]
+concat' [] = []
+concat' ([]:ys) = concat' ys
+concat' ((x:xs):ys) = x : concat' (xs : ys) 
+
+concat'' :: [[a]] -> [a]
+concat'' xss = [x | xs <- xss, x <- xs]
+
+concat1 :: [[a]] -> [a]
+concat1 [] = []
+concat1 (x:xs) = x ++ concat1 xs
+
+-- [[1,2], [3,4]] => 1 : zip [2] : [[3,4]] = 1 : zip [[2], [3,4]]
+-- => 1 : 2 : zip [[], [3,4]]
